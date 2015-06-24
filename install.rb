@@ -13,7 +13,7 @@ else
   system("ruby", "#{absolute("update_code.rb")}", out: $stdout, err: :out)
 
   Dir.chdir "wettkampf-manager-master"
-  system("bundle", out: $stdout, err: :out)
+  system("bundle", "install --without development test staging", out: $stdout, err: :out)
   FileUtils.rm_rf("public/assets")
 
   production = { "RAILS_ENV" => "production" }
