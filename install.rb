@@ -4,10 +4,10 @@ end
 
 if ARGV[0] == "first"
   puts "first"
-  puts `ruby #{absolute("update_code.rb")}`
-  puts `ruby #{absolute("install.rb")}`
+  system("ruby", "#{absolute("update_code.rb")}", out: $stdout, err: :out)
+  system("ruby", "#{absolute("install.rb")}", out: $stdout, err: :out)
 else
   puts "second"
-  puts `ruby #{absolute("update_code.rb")}`
+  system("ruby", "#{absolute("update_code.rb")}", out: $stdout, err: :out)
   puts "do some other stuff"
 end
