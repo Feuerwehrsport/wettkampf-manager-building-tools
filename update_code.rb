@@ -3,7 +3,7 @@ require_relative 'building_tools'
 update_code(
   zip_url: "https://github.com/Feuerwehrsport/wettkampf-manager/archive/master.zip",
   extracted_path: absolute("..", "wettkampf-manager-master"),
-  keep_patterns: ["db/*.sqlite3", "log/*", "public/uploads/*", "public/assets/*"],
+  keep_patterns: ["db/*.sqlite3", "log/*", "public/uploads/*", "public/assets/*", "tmp/cache/assets/production/*"],
 )
 
 update_code(
