@@ -1,8 +1,4 @@
-require 'fileutils'
-
-def absolute *path_args
-  File.join(File.dirname(__FILE__), *path_args)
-end
+require_relative 'building_tools'
 
 if ARGV[0] == "first"
   puts "Neuladen des Quellcodes (Teil 1)"
@@ -16,9 +12,11 @@ else
   system("bundle install --without development test staging", out: $stdout, err: :out)
   FileUtils.rm_rf("public/assets")
 
-  production = { "RAILS_ENV" => "production" }
   system(production, "bundle exec rake assets:precompile", out: $stdout, err: :out)
   system(production, "bundle exec rake db:migrate", out: $stdout, err: :out)
   system(production, "bundle exec rake db:seed", out: $stdout, err: :out)
   system(production, "bundle exec rake import_suggestions", out: $stdout, err: :out)
+
+  puts ""
+  puts "Installation komplett"
 end
