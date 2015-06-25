@@ -12,4 +12,4 @@ puts "Zum Beenden bitte STRG + C drücken"
 puts "Zum Beenden bitte STRG + C drücken"
 
 Dir.chdir "wettkampf-manager-master"
-system(production, "bundle exec rails server -e production -p #{platform_port} -b 0.0.0.0 -d", out: $stdout, err: :out)
+system(production, "bundle exec rails server -e production -p #{platform_port} -b 0.0.0.0", out: $stdout, err: :out)
