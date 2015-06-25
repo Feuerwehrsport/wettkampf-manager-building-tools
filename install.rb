@@ -10,7 +10,7 @@ if ARGV[0] == "first"
   overwrite = ""
   if File.exists? "wettkampf-manager-master/db/production.sqlite3"
     print "Es existiert bereits eine Datenbank. Soll diese Überschrieben werden? [j/n] "
-    case gets.strip
+    case STDIN.gets.strip
       when 'Y', 'y', 'j', 'J', 'yes'
         overwrite = " overwrite"
     end
