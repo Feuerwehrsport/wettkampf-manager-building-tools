@@ -7,6 +7,9 @@ unless port_free?(platform_port)
 end
 
 puts "Server starten"
+puts "Zum Beenden bitte STRG + C drücken"
+puts "Zum Beenden bitte STRG + C drücken"
+puts "Zum Beenden bitte STRG + C drücken"
 
 Dir.chdir "wettkampf-manager-master"
 system(production, "bundle exec rails server -e production -p #{platform_port} -b 0.0.0.0 -d", out: $stdout, err: :out)
