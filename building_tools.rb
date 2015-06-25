@@ -18,9 +18,8 @@ def update_code(options)
   tempfile.close
 
   # remove old files
-  keep_patterns = ["db/*.sqlite3", "log/*", "public/uploads/*"]
   Dir.glob("#{options[:extracted_path]}/**/*", File::FNM_DOTMATCH).select { |file| File.file?(file) }.reject do |file|
-    keep_patterns.any? { |keep_pattern| File.fnmatch("#{options[:extracted_path]}/#{keep_pattern}", file) }
+    options[:keep_patterns].any? { |keep_pattern| File.fnmatch("#{options[:extracted_path]}/#{keep_pattern}", file) }
   end.each do |file|
     FileUtils.rm(file)
   end
