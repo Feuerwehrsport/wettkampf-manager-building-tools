@@ -25,7 +25,8 @@ system(production, "bundle exec rake db:migrate", out: $stdout, err: :out)
 
 if overwrite
   system(production, "bundle exec rake db:seed", out: $stdout, err: :out)
-  system(production, "bundle exec rake import_suggestions", out: $stdout, err: :out)
+  system(production, "bundle exec rake import:suggestions", out: $stdout, err: :out)
+  system(production, "bundle exec rake import:d_cup_results", out: $stdout, err: :out)
 end
 
 puts ""

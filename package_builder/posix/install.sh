@@ -20,5 +20,6 @@ $SCRIPT_PATH/lib/wrapper.sh rake db:migrate
 
 if [[ OVERWRITE -eq 1 ]] ; then
   $SCRIPT_PATH/lib/wrapper.sh rake db:seed
-  $SCRIPT_PATH/lib/wrapper.sh rake import_suggestions
+  $SCRIPT_PATH/lib/wrapper.sh rake import:suggestions
+  $SCRIPT_PATH/lib/wrapper.sh rake import:d_cup_results
 fi

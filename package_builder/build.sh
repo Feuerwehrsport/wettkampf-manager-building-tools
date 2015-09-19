@@ -2,11 +2,46 @@
 
 set -ue
 
+
+usage() {
+cat << EOF
+usage: $0 [OPTIONS]
+
+OPTIONS:
+ -h               Show this message
+ -v VERSION       Version
+EOF
+}
+
+VERSION=""
+while getopts “hv:” OPTION
+do
+  case $OPTION in
+    h)
+      usage
+      exit 1
+      ;;
+    v)
+      VERSION=$OPTARG
+      ;;
+    ?)
+      usage
+      exit
+    ;;
+  esac
+done
+
+if [[ "$VERSION" == "" ]] ; then
+  usage
+  exit 1
+fi
+
+
+
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
 GIT="git@github.com:Feuerwehrsport/wettkampf-manager.git"
 PACKAGE_NAME="wettkampf-manager"
-VERSION="1.0.0"
 
 TRAVELING_RUBY_VERSION="20150517-2.1.6"
 TRAVELING_RUBY_NATIVES=("bcrypt-3.1.10" "json-1.8.2" "nokogiri-1.6.6.2" "sqlite3-1.3.10")
@@ -157,25 +192,6 @@ windows_target() {
   cp -r "$CODE_PATH" "$PACKAGE_PATH/"
   cp -pr "$TEMP_PATH/packaging/vendor/ruby/2.1.0" "$PACKAGE_PATH/ruby/lib/ruby/gems/"
 
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/bcrypt-3*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/builder-3*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/coffee-rails-4*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/coffee-script-2*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/coffee-script-source-1*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/erubis-2*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/execjs-2*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/hike-1*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/mail-2*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/mime-types-2*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/multi_json-1*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/nokogiri-1*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/sprockets-2*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/sqlite3-1*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/thor-0*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/thread_safe-0*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/tilt-1*.info
-  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/tzinfo-1*.info
-
   rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/specifications/bcrypt-3*.gemspec
   rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/specifications/nokogiri-1*.gemspec
   rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/specifications/sqlite3-1*.gemspec
@@ -190,8 +206,8 @@ windows_target() {
   mkdir $PACKAGE_PATH/wettkampf-manager/.bundle
   cp $SCRIPT_PATH/windows-bundle-config $PACKAGE_PATH/wettkampf-manager/.bundle/config
 
-
-  zip -r $DEST_PATH/$PACKAGE_VERSION_NAME.zip $PACKAGE_PATH
+  cd $PACKAGE_PATH
+  zip -r $DEST_PATH/$PACKAGE_VERSION_NAME.zip .
 }
 
 
@@ -205,5 +221,12 @@ pwd
 ls -lh .
 
 DATE=$(date '+%Y-%m-%d')
-echo "ssh -p 2412 www-data@georf.de mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/"
-echo "scp -P 2412 -r $DEST_PATH/* www-data@georf.de:/var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/"
+echo -n "Erzeugte Dateien hochladen? [j/n] "
+read REPLY
+if [[ "$REPLY" =~ ^[YyJj]$ ]] ; then
+  ssh -p 2412 www-data@georf.de mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/
+  scp -P 2412 -r $DEST_PATH/* www-data@georf.de:/var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/
+else 
+  echo "ssh -p 2412 www-data@georf.de mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/"
+  echo "scp -P 2412 -r $DEST_PATH/* www-data@georf.de:/var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/"
+fi
