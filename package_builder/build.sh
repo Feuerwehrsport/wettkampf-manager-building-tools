@@ -12,13 +12,19 @@ TRAVELING_RUBY_VERSION="20150517-2.1.6"
 TRAVELING_RUBY_NATIVES=("bcrypt-3.1.10" "json-1.8.2" "nokogiri-1.6.6.2" "sqlite3-1.3.10")
 TRAVELING_RUBY_URL="http://d6r77u77i8pq3.cloudfront.net/releases"
 
-TEMP_PATH="/tmp/wettkampf-manager"
+TEMP_PATH="/tmp/wettkampf-manager-packaging"
 CODE_PATH="$TEMP_PATH/wettkampf-manager"
+DEST_PATH="$TEMP_PATH/dest"
+BUNDLE_CACHE="/tmp/bundle-cache"
+DOWNLOAD_CACHE="/tmp/wettkampf-manager-dwcache"
+
 
 rm -rf "$TEMP_PATH"
 
 mkdir -p "$TEMP_PATH"
 mkdir -p "$CODE_PATH"
+mkdir -p "$DEST_PATH"
+mkdir -p "$DOWNLOAD_CACHE"
 
 git clone "$GIT" "$CODE_PATH"
 rm -rf "$CODE_PATH/.git"
@@ -28,12 +34,16 @@ mkdir -p "$TEMP_PATH/packaging/vendor"
 
 cp "$CODE_PATH/Gemfile" "$CODE_PATH/Gemfile.lock" "$TEMP_PATH/packaging/tmp/"
 cd "$TEMP_PATH/packaging/tmp"
-cp -r "/tmp/ruby" "$TEMP_PATH/packaging/vendor/ruby"
-# BUNDLE_IGNORE_CONFIG=1 bundle install --deployment --verbose --path ../vendor --without development test
-#fake bundle
+
+if [[ -d "$BUNDLE_CACHE" ]] ; then
+  cp -r "$BUNDLE_CACHE" "$TEMP_PATH/packaging/vendor"
+fi
+BUNDLE_IGNORE_CONFIG=1 bundle install --clean --deployment --path ../vendor --without development test
+cp -fr "$TEMP_PATH/packaging/vendor/ruby" "$BUNDLE_CACHE"
+
 
 mkdir -p "$TEMP_PATH/packaging/vendor/.bundle"
-cp "$SCRIPT_PATH/bundle-config" "$TEMP_PATH/packaging/vendor/.bundle/config"
+cp "$SCRIPT_PATH/linux-bundle-config" "$TEMP_PATH/packaging/vendor/.bundle/config"
 
 # Remove tests
 rm -rf $TEMP_PATH/packaging/vendor/ruby/*/gems/*/test
@@ -94,27 +104,32 @@ default_target() {
 
   PACKAGE_VERSION_NAME="$PACKAGE_NAME-$VERSION-$TARGET"
   PACKAGE_PATH="$TEMP_PATH/$PACKAGE_VERSION_NAME"
+
+  RUBY_TAR="$DOWNLOAD_CACHE/traveling-ruby-$TRAVELING_RUBY_VERSION-$TARGET.tar.gz"
   cd "$TEMP_PATH"
-  curl -L -O --fail "$TRAVELING_RUBY_URL/traveling-ruby-$TRAVELING_RUBY_VERSION-$TARGET.tar.gz"
+
+
+  curl -L --fail -z "$RUBY_TAR" -o "$RUBY_TAR" "$TRAVELING_RUBY_URL/traveling-ruby-$TRAVELING_RUBY_VERSION-$TARGET.tar.gz"
 
   mkdir -p "$PACKAGE_PATH/lib/ruby"
-  tar -xzf "traveling-ruby-$TRAVELING_RUBY_VERSION-$TARGET.tar.gz" -C "$PACKAGE_PATH/lib/ruby"
+  tar -xzf "$RUBY_TAR" -C "$PACKAGE_PATH/lib/ruby"
   cp -pR "$TEMP_PATH/packaging/vendor" "$PACKAGE_PATH/lib/"
   cp "$CODE_PATH/Gemfile" "$CODE_PATH/Gemfile.lock" "$PACKAGE_PATH/lib/vendor/"
 
   for NATIVE in ${TRAVELING_RUBY_NATIVES[@]}; do
-    curl -L --fail -o "$TEMP_PATH/traveling-ruby-$TRAVELING_RUBY_VERSION-$TARGET-$NATIVE.tar.gz" "$TRAVELING_RUBY_URL/traveling-ruby-gems-$TRAVELING_RUBY_VERSION-$TARGET/$NATIVE.tar.gz"
+    NATIVE_TAR="$DOWNLOAD_CACHE/traveling-ruby-$TRAVELING_RUBY_VERSION-$TARGET-$NATIVE.tar.gz"
+    curl -L --fail -z "$NATIVE_TAR" -o "$NATIVE_TAR" "$TRAVELING_RUBY_URL/traveling-ruby-gems-$TRAVELING_RUBY_VERSION-$TARGET/$NATIVE.tar.gz"
     mkdir -p "$PACKAGE_PATH/lib/vendor/ruby"
-    tar -xzf "$TEMP_PATH/traveling-ruby-$TRAVELING_RUBY_VERSION-$TARGET-$NATIVE.tar.gz" -C "$PACKAGE_PATH/lib/vendor/ruby"
+    tar -xzf "$NATIVE_TAR" -C "$PACKAGE_PATH/lib/vendor/ruby"
   done
   
   cp -r "$CODE_PATH" "$PACKAGE_PATH/"
-  cp "$SCRIPT_PATH/wrapper.sh" "$PACKAGE_PATH/lib/"
-  chmod +x "$PACKAGE_PATH/lib/wrapper.sh"
+  cp "$SCRIPT_PATH/posix/wrapper.sh" "$PACKAGE_PATH/lib/"
 
   # node
-  curl -L --fail -o "$TEMP_PATH/node-$NODEJS_TARGET.tar.gz" "https://nodejs.org/dist/v4.1.0/node-v4.1.0-$NODEJS_TARGET.tar.gz"
-  tar -xzf "$TEMP_PATH/node-$NODEJS_TARGET.tar.gz" -C "$TEMP_PATH"
+  NODE_TAR="$DOWNLOAD_CACHE/node-$NODEJS_TARGET.tar.gz"
+  curl -L --fail -z "$NODE_TAR" -o "$NODE_TAR" "https://nodejs.org/dist/v4.1.0/node-v4.1.0-$NODEJS_TARGET.tar.gz"
+  tar -xzf "$NODE_TAR" -C "$TEMP_PATH"
   mkdir -p "$PACKAGE_PATH/lib/node/bin"
   chmod -R go-w "$PACKAGE_PATH/lib/node"
   cp "$TEMP_PATH/node-v4.1.0-$NODEJS_TARGET/bin/node" "$PACKAGE_PATH/lib/node/bin/"
@@ -124,15 +139,71 @@ default_target() {
   rm -rf $PACKAGE_PATH/lib/ruby/lib/ruby/*/rdoc*
 
   # Skripte kopieren
-  cp $SCRIPT_PATH/install.sh $PACKAGE_PATH/
-  cp $SCRIPT_PATH/start_console.sh $PACKAGE_PATH/
-  cp $SCRIPT_PATH/start_server.sh $PACKAGE_PATH/
-  cp $SCRIPT_PATH/port_redirection.sh $PACKAGE_PATH/
+  cp $SCRIPT_PATH/posix/install.sh $PACKAGE_PATH/
+  cp $SCRIPT_PATH/posix/start_console.sh $PACKAGE_PATH/
+  cp $SCRIPT_PATH/posix/start_server.sh $PACKAGE_PATH/
+  cp $SCRIPT_PATH/posix/port_redirection.sh $PACKAGE_PATH/
 
-  tar -C $TEMP_PATH -czf $PACKAGE_PATH.tar.gz $PACKAGE_VERSION_NAME
-  # upload to server
+  tar -C $TEMP_PATH -czf $DEST_PATH/$PACKAGE_VERSION_NAME.tar.gz $PACKAGE_VERSION_NAME
 }
+
+windows_target() {
+  TARGET="windows"
+  PACKAGE_VERSION_NAME="$PACKAGE_NAME-$VERSION-$TARGET"
+  PACKAGE_PATH="$TEMP_PATH/$PACKAGE_VERSION_NAME"
+
+
+  mkdir -p "$PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0"
+  cp -r "$CODE_PATH" "$PACKAGE_PATH/"
+  cp -pr "$TEMP_PATH/packaging/vendor/ruby/2.1.0" "$PACKAGE_PATH/ruby/lib/ruby/gems/"
+
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/bcrypt-3*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/builder-3*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/coffee-rails-4*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/coffee-script-2*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/coffee-script-source-1*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/erubis-2*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/execjs-2*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/hike-1*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/mail-2*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/mime-types-2*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/multi_json-1*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/nokogiri-1*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/sprockets-2*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/sqlite3-1*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/thor-0*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/thread_safe-0*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/tilt-1*.info
+  # rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/build_info/tzinfo-1*.info
+
+  rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/specifications/bcrypt-3*.gemspec
+  rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/specifications/nokogiri-1*.gemspec
+  rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/specifications/sqlite3-1*.gemspec
+
+  rm -r $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/gems/bcrypt-3*
+  rm -r $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/gems/json-1*
+  rm -r $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/gems/nokogiri-1*
+  rm -r $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/gems/sqlite3-1*
+
+  cp -pr $SCRIPT_PATH/../ruby_windows/* $PACKAGE_PATH/ruby/
+  cp -pr $SCRIPT_PATH/windows/* $PACKAGE_PATH/
+  mkdir $PACKAGE_PATH/wettkampf-manager/.bundle
+  cp $SCRIPT_PATH/windows-bundle-config $PACKAGE_PATH/wettkampf-manager/.bundle/config
+
+
+  zip -r $DEST_PATH/$PACKAGE_VERSION_NAME.zip $PACKAGE_PATH
+}
+
 
 default_target "linux-x86_64" "linux-x64"
 default_target "linux-x86" "linux-x86"
 default_target "osx" "darwin-x64"
+windows_target
+
+cd $DEST_PATH
+pwd
+ls -lh .
+
+DATE=$(date '+%Y-%m-%d')
+echo "ssh -p 2412 www-data@georf.de mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/"
+echo "scp -P 2412 -r $DEST_PATH/* www-data@georf.de:/var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/"
