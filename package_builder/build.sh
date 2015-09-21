@@ -10,11 +10,15 @@ usage: $0 [OPTIONS]
 OPTIONS:
  -h               Show this message
  -v VERSION       Version
+ -g GIT_COMMIT    Specific git commit id
+ -d DATE          Specific date
 EOF
 }
 
 VERSION=""
-while getopts “hv:” OPTION
+GIT_COMMIT_ID=""
+DATE="$(date '+%Y-%m-%d')"
+while getopts "hv:g:d:" OPTION
 do
   case $OPTION in
     h)
@@ -23,6 +27,12 @@ do
       ;;
     v)
       VERSION=$OPTARG
+      ;;
+    g)
+      GIT_COMMIT_ID=$OPTARG
+      ;;
+    d)
+      DATE=$OPTARG
       ;;
     ?)
       usage
@@ -62,7 +72,20 @@ mkdir -p "$DEST_PATH"
 mkdir -p "$DOWNLOAD_CACHE"
 
 git clone "$GIT" "$CODE_PATH"
+if [[ "$GIT_COMMIT_ID" == "" ]] ; then
+  COMMIT_ID=$(git ls-remote $GIT refs/heads/master | cut -f1)
+else
+  cd "$CODE_PATH"
+  git reset --hard "$GIT_COMMIT_ID"
+  COMMIT_ID="$GIT_COMMIT_ID"
+  cd "$SCRIPT_PATH"
+fi
 rm -rf "$CODE_PATH/.git"
+
+touch $TEMP_PATH/change_log.md
+vim $TEMP_PATH/change_log.md
+
+$SCRIPT_PATH/release_info.py "$DATE" "$COMMIT_ID" $TEMP_PATH/change_log.md > $TEMP_PATH/release-info.json
 
 mkdir -p "$TEMP_PATH/packaging/tmp"
 mkdir -p "$TEMP_PATH/packaging/vendor"
@@ -179,6 +202,7 @@ default_target() {
   cp $SCRIPT_PATH/posix/start_console.sh $PACKAGE_PATH/
   cp $SCRIPT_PATH/posix/start_server.sh $PACKAGE_PATH/
   cp $SCRIPT_PATH/posix/port_redirection.sh $PACKAGE_PATH/
+  cp $TEMP_PATH/change_log.md $PACKAGE_PATH/change_log_${VERSION}.md
 
   tar -C $TEMP_PATH -czf $DEST_PATH/$PACKAGE_VERSION_NAME.tar.gz $PACKAGE_VERSION_NAME
 }
@@ -204,6 +228,7 @@ windows_target() {
 
   cp -pr $SCRIPT_PATH/../ruby_windows/* $PACKAGE_PATH/ruby/
   cp -pr $SCRIPT_PATH/windows/* $PACKAGE_PATH/
+  cp $TEMP_PATH/change_log.md $PACKAGE_PATH/change_log_${VERSION}.md
   mkdir $PACKAGE_PATH/wettkampf-manager/.bundle
   cp $SCRIPT_PATH/windows-bundle-config $PACKAGE_PATH/wettkampf-manager/.bundle/config
 
@@ -221,20 +246,10 @@ cd $DEST_PATH
 pwd
 ls -lh .
 
-DATE=$(date '+%Y-%m-%d')
 echo -n "Erzeugte Dateien veröffentlichen? [j/n] "
 read REPLY
 if [[ "$REPLY" =~ ^[YyJj]$ ]] ; then
-  mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/
-  cp -r $DEST_PATH/* /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/
-else
-  echo -n "Erzeugte Dateien hochladen? [j/n] "
-  read REPLY
-  if [[ "$REPLY" =~ ^[YyJj]$ ]] ; then
-    ssh -p 2412 www-data@georf.de mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/
-    scp -P 2412 -r $DEST_PATH/* www-data@georf.de:/var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/
-  else 
-    echo "ssh -p 2412 www-data@georf.de mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/"
-    echo "scp -P 2412 -r $DEST_PATH/* www-data@georf.de:/var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/"
-  fi
+  mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/$VERSION/
+  cp -r $DEST_PATH/* /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/$VERSION/
+  cp $TEMP_PATH/release-info.json /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/$VERSION/
 fi
