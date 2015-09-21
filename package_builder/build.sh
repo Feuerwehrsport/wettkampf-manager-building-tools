@@ -71,7 +71,8 @@ cp "$CODE_PATH/Gemfile" "$CODE_PATH/Gemfile.lock" "$TEMP_PATH/packaging/tmp/"
 cd "$TEMP_PATH/packaging/tmp"
 
 if [[ -d "$BUNDLE_CACHE" ]] ; then
-  cp -r "$BUNDLE_CACHE" "$TEMP_PATH/packaging/vendor"
+  mkdir -p "$TEMP_PATH/packaging/vendor/ruby"
+  cp -r $BUNDLE_CACHE/2.1.0 "$TEMP_PATH/packaging/vendor/ruby/"
 fi
 BUNDLE_IGNORE_CONFIG=1 bundle install --clean --deployment --path ../vendor --without development test
 cp -fr "$TEMP_PATH/packaging/vendor/ruby" "$BUNDLE_CACHE"
@@ -221,12 +222,19 @@ pwd
 ls -lh .
 
 DATE=$(date '+%Y-%m-%d')
-echo -n "Erzeugte Dateien hochladen? [j/n] "
+echo -n "Erzeugte Dateien veröffentlichen? [j/n] "
 read REPLY
 if [[ "$REPLY" =~ ^[YyJj]$ ]] ; then
-  ssh -p 2412 www-data@georf.de mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/
-  scp -P 2412 -r $DEST_PATH/* www-data@georf.de:/var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/
-else 
-  echo "ssh -p 2412 www-data@georf.de mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/"
-  echo "scp -P 2412 -r $DEST_PATH/* www-data@georf.de:/var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/"
+  mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/
+  cp -r $DEST_PATH/* /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/
+else
+  echo -n "Erzeugte Dateien hochladen? [j/n] "
+  read REPLY
+  if [[ "$REPLY" =~ ^[YyJj]$ ]] ; then
+    ssh -p 2412 www-data@georf.de mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/
+    scp -P 2412 -r $DEST_PATH/* www-data@georf.de:/var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/
+  else 
+    echo "ssh -p 2412 www-data@georf.de mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/"
+    echo "scp -P 2412 -r $DEST_PATH/* www-data@georf.de:/var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/${VERSION}_$DATE/"
+  fi
 fi
