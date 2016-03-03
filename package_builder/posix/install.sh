@@ -15,7 +15,6 @@ if [[ -f "$SCRIPT_PATH/wettkampf-manager/db/production.sqlite3" ]] ; then
   fi
 fi
 
-$SCRIPT_PATH/lib/wrapper.sh rake assets:precompile
 $SCRIPT_PATH/lib/wrapper.sh rake db:migrate
 
 if [[ OVERWRITE -eq 1 ]] ; then

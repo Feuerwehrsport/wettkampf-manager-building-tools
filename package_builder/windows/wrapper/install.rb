@@ -20,7 +20,6 @@ end
 Dir.chdir "wettkampf-manager"
 FileUtils.rm_rf("db/production.sqlite3") if overwrite
 
-system(production, "bundle exec rake assets:precompile", out: $stdout, err: :out)
 system(production, "bundle exec rake db:migrate", out: $stdout, err: :out)
 
 if overwrite

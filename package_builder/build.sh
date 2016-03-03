@@ -1,7 +1,7 @@
 #!/bin/bash
-
-set -ue
-
+export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
+source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+set -e
 
 usage() {
 cat << EOF
@@ -81,6 +81,10 @@ else
   cd "$SCRIPT_PATH"
 fi
 rm -rf "$CODE_PATH/.git"
+cd "$CODE_PATH"
+rvm use 2.1.0@wettkampf-manager
+bundle --without development test
+RAILS_ENV=production rake assets:precompile
 
 touch $TEMP_PATH/change_log.md
 vim $TEMP_PATH/change_log.md
@@ -97,6 +101,7 @@ if [[ -d "$BUNDLE_CACHE" ]] ; then
   mkdir -p "$TEMP_PATH/packaging/vendor/ruby"
   cp -r $BUNDLE_CACHE/2.1.0 "$TEMP_PATH/packaging/vendor/ruby/"
 fi
+rvm use 2.1.0@wettkampf-manager
 BUNDLE_IGNORE_CONFIG=1 bundle install --clean --deployment --path ../vendor --without development test
 cp -fr "$TEMP_PATH/packaging/vendor/ruby" "$BUNDLE_CACHE"
 
@@ -229,7 +234,7 @@ windows_target() {
   cp -pr $SCRIPT_PATH/../ruby_windows/* $PACKAGE_PATH/ruby/
   cp -pr $SCRIPT_PATH/windows/* $PACKAGE_PATH/
   cp $TEMP_PATH/change_log.md $PACKAGE_PATH/change_log_${VERSION}.md
-  mkdir $PACKAGE_PATH/wettkampf-manager/.bundle
+  mkdir -p $PACKAGE_PATH/wettkampf-manager/.bundle
   cp $SCRIPT_PATH/windows-bundle-config $PACKAGE_PATH/wettkampf-manager/.bundle/config
 
   cd $PACKAGE_PATH
