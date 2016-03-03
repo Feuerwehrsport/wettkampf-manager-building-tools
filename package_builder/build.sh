@@ -249,7 +249,8 @@ ls -lh .
 echo -n "Erzeugte Dateien veröffentlichen? [j/n] "
 read REPLY
 if [[ "$REPLY" =~ ^[YyJj]$ ]] ; then
-  mkdir /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/$VERSION/
-  cp -r $DEST_PATH/* /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/$VERSION/
-  cp $TEMP_PATH/release-info.json /var/www/sites/de/feuerwehrsport-statistik/www/wettkampf-manager/$VERSION/
+  PUBLISH_TARGET="/srv/fws-statistik/shared/uploads/wettkampf_manager"
+  mkdir "$PUBLISH_TARGET/$VERSION/"
+  cp -r $DEST_PATH/* "$PUBLISH_TARGET/$VERSION/"
+  cp $TEMP_PATH/release-info.json "$PUBLISH_TARGET/$VERSION/"
 fi
