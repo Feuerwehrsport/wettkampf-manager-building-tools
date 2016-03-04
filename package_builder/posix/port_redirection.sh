@@ -17,7 +17,7 @@ if [[ "$(whoami)" != root ]] ; then
     fi
   done
 
-  echo "Diese Programm muss als Root ausgeführt werden, damit der Port 80 benutzt werden kann."
+  echo "Dieses Programm muss als Root ausgeführt werden, damit der Port 80 benutzt werden kann."
   exit 1
 fi
 

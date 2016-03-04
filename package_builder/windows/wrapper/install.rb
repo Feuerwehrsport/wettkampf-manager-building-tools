@@ -1,5 +1,7 @@
 require_relative 'building_tools'
 
+puts "Installation wird durchgeführt ..."
+
 unless port_free?(platform_port)
   puts "Der Port #{platform_port} ist belegt. Bitte beenden Sie zuerste den Server."
   exit 21
@@ -25,7 +27,7 @@ system(production, "bundle exec rake db:migrate", out: $stdout, err: :out)
 if overwrite
   system(production, "bundle exec rake db:seed", out: $stdout, err: :out)
   system(production, "bundle exec rake import:suggestions", out: $stdout, err: :out)
-  system(production, "bundle exec rake import:d_cup_results", out: $stdout, err: :out)
+  # system(production, "bundle exec rake import:d_cup_results", out: $stdout, err: :out)
 end
 
 puts ""
