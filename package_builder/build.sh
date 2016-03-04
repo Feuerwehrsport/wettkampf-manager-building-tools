@@ -81,6 +81,7 @@ else
   cd "$SCRIPT_PATH"
 fi
 rm -rf "$CODE_PATH/.git"
+rm -rf "$CODE_PATH/spec"
 cd "$CODE_PATH"
 rvm use 2.1.0@wettkampf-manager
 bundle --without development test
