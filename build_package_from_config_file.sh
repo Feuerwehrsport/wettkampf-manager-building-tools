@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONFIG_FILE=/home/georf/.wettkampf-manager-config
+CONFIG_FILE=/home/georf/.wettkampf-manager/config
 
 if [ ! -f "$CONFIG_FILE" ] ; then exit 1 ; fi
 
