@@ -70,7 +70,7 @@ TEMP_PATH="/tmp/wettkampf-manager-packaging"
 CODE_PATH="$TEMP_PATH/wettkampf-manager"
 DEST_PATH="$TEMP_PATH/dest"
 BUNDLE_CACHE="/tmp/bundle-cache"
-DOWNLOAD_CACHE="$SCRIPT_PATH/binary-clone"
+DOWNLOAD_CACHE="$SCRIPT_PATH/../binary-clone"
 
 
 rm -rf "$TEMP_PATH"
@@ -268,7 +268,7 @@ fi
 
 if [[ "$REPLY" =~ ^[YyJj]$ ]] ; then
   PUBLISH_TARGET="/srv/fws-statistik/shared/uploads/wettkampf_manager"
-  mkdir "$PUBLISH_TARGET/$VERSION/"
+  mkdir -p "$PUBLISH_TARGET/$VERSION/"
   cp -r $DEST_PATH/* "$PUBLISH_TARGET/$VERSION/"
   cp $TEMP_PATH/release-info.json "$PUBLISH_TARGET/$VERSION/"
 fi
