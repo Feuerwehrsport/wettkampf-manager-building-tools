@@ -56,8 +56,6 @@ if [[ "$VERSION" == "" ]] ; then
   exit 1
 fi
 
-exit
-
 
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
