@@ -56,6 +56,7 @@ if [[ "$VERSION" == "" ]] ; then
   exit 1
 fi
 
+exit
 
 
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
@@ -71,7 +72,7 @@ TEMP_PATH="/tmp/wettkampf-manager-packaging"
 CODE_PATH="$TEMP_PATH/wettkampf-manager"
 DEST_PATH="$TEMP_PATH/dest"
 BUNDLE_CACHE="/tmp/bundle-cache"
-DOWNLOAD_CACHE="/tmp/wettkampf-manager-dwcache"
+DOWNLOAD_CACHE="$SCRIPT_PATH/binary-clone"
 
 
 rm -rf "$TEMP_PATH"
@@ -79,7 +80,6 @@ rm -rf "$TEMP_PATH"
 mkdir -p "$TEMP_PATH"
 mkdir -p "$CODE_PATH"
 mkdir -p "$DEST_PATH"
-mkdir -p "$DOWNLOAD_CACHE"
 
 git clone "$GIT" "$CODE_PATH"
 if [[ "$GIT_COMMIT_ID" == "" ]] ; then
@@ -191,9 +191,6 @@ default_target() {
   RUBY_TAR="$DOWNLOAD_CACHE/traveling-ruby-$TRAVELING_RUBY_VERSION-$TARGET.tar.gz"
   cd "$TEMP_PATH"
 
-
-  curl -L --fail -z "$RUBY_TAR" -o "$RUBY_TAR" "$TRAVELING_RUBY_URL/traveling-ruby-$TRAVELING_RUBY_VERSION-$TARGET.tar.gz"
-
   mkdir -p "$PACKAGE_PATH/lib/ruby"
   tar -xzf "$RUBY_TAR" -C "$PACKAGE_PATH/lib/ruby"
   cp -pR "$TEMP_PATH/packaging/vendor" "$PACKAGE_PATH/lib/"
@@ -201,7 +198,6 @@ default_target() {
 
   for NATIVE in ${TRAVELING_RUBY_NATIVES[@]}; do
     NATIVE_TAR="$DOWNLOAD_CACHE/traveling-ruby-$TRAVELING_RUBY_VERSION-$TARGET-$NATIVE.tar.gz"
-    curl -L --fail -z "$NATIVE_TAR" -o "$NATIVE_TAR" "$TRAVELING_RUBY_URL/traveling-ruby-gems-$TRAVELING_RUBY_VERSION-$TARGET/$NATIVE.tar.gz"
     mkdir -p "$PACKAGE_PATH/lib/vendor/ruby"
     tar -xzf "$NATIVE_TAR" -C "$PACKAGE_PATH/lib/vendor/ruby"
   done
@@ -210,7 +206,6 @@ default_target() {
 
   # node
   NODE_TAR="$DOWNLOAD_CACHE/node-$NODEJS_TARGET.tar.gz"
-  curl -L --fail -z "$NODE_TAR" -o "$NODE_TAR" "https://nodejs.org/dist/v4.1.0/node-v4.1.0-$NODEJS_TARGET.tar.gz"
   tar -xzf "$NODE_TAR" -C "$TEMP_PATH"
   mkdir -p "$PACKAGE_PATH/lib/node/bin"
   chmod -R go-w "$PACKAGE_PATH/lib/node"
@@ -266,7 +261,7 @@ cd $DEST_PATH
 pwd
 ls -lh .
 
-if [[ FORCE_PUBLISH == "y" ]] ; then
+if [[ "$FORCE_PUBLISH" == "y" ]] ; then
   REPLY="y"
 else
   echo -n "Erzeugte Dateien veröffentlichen? [j/n] "
