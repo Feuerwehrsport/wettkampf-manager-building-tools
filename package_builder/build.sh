@@ -12,13 +12,17 @@ OPTIONS:
  -v VERSION       Version
  -g GIT_COMMIT    Specific git commit id
  -d DATE          Specific date
+ -c CHANGE_FILE   markdown file with change log
+ -f               force publishing
 EOF
 }
 
 VERSION=""
 GIT_COMMIT_ID=""
+CHANGE_FILE=""
+FORCE_PUBLISH="n"
 DATE="$(date '+%Y-%m-%d')"
-while getopts "hv:g:d:" OPTION
+while getopts "hv:g:d:c:f" OPTION
 do
   case $OPTION in
     h)
@@ -34,10 +38,16 @@ do
     d)
       DATE=$OPTARG
       ;;
+    c)
+      CHANGE_FILE="$OPTARG"
+      ;;
+    f)
+      FORCE_PUBLISH="y"
+      ;;
     ?)
       usage
       exit
-    ;;
+      ;;
   esac
 done
 
@@ -86,11 +96,19 @@ cd "$CODE_PATH"
 rvm use 2.1.0@wettkampf-manager
 bundle --without development test
 RAILS_ENV=production rake assets:precompile
+RAILS_ENV=production rake db:migrate
+RAILS_ENV=production rake db:seed
+RAILS_ENV=production rake import:suggestions
 
-touch $TEMP_PATH/change_log.md
-vim $TEMP_PATH/change_log.md
 
-$SCRIPT_PATH/release_info.py "$DATE" "$COMMIT_ID" $TEMP_PATH/change_log.md > $TEMP_PATH/release-info.json
+if [[ "$CHANGE_FILE" == "" ]] ; then
+  touch "$TEMP_PATH/change_log.md"
+  vim "$TEMP_PATH/change_log.md"
+else
+  cp "$CHANGE_FILE" "$TEMP_PATH/change_log.md"
+fi
+
+$SCRIPT_PATH/release_info.py "$DATE" "$COMMIT_ID" "$(date '+%Y-%m-%d %H:%M:%S')" $TEMP_PATH/change_log.md > $TEMP_PATH/release-info.json
 
 mkdir -p "$TEMP_PATH/packaging/tmp"
 mkdir -p "$TEMP_PATH/packaging/vendor"
@@ -189,7 +207,6 @@ default_target() {
   done
   
   cp -r "$CODE_PATH" "$PACKAGE_PATH/"
-  cp "$SCRIPT_PATH/posix/wrapper.sh" "$PACKAGE_PATH/lib/"
 
   # node
   NODE_TAR="$DOWNLOAD_CACHE/node-$NODEJS_TARGET.tar.gz"
@@ -204,11 +221,8 @@ default_target() {
   rm -rf $PACKAGE_PATH/lib/ruby/lib/ruby/*/rdoc*
 
   # Skripte kopieren
-  cp $SCRIPT_PATH/posix/install.sh $PACKAGE_PATH/
-  cp $SCRIPT_PATH/posix/start_console.sh $PACKAGE_PATH/
-  cp $SCRIPT_PATH/posix/start_server.sh $PACKAGE_PATH/
-  cp $SCRIPT_PATH/posix/port_redirection.sh $PACKAGE_PATH/
-  cp $TEMP_PATH/change_log.md $PACKAGE_PATH/change_log_${VERSION}.md
+  cp -r $SCRIPT_PATH/posix/ $PACKAGE_PATH/
+  cp $SCRIPT_PATH/../dokumentation/dokumentation.pdf $PACKAGE_PATH/anleitung.pdf
 
   tar -C $TEMP_PATH -czf $DEST_PATH/$PACKAGE_VERSION_NAME.tar.gz $PACKAGE_VERSION_NAME
 }
@@ -234,7 +248,7 @@ windows_target() {
 
   cp -pr $SCRIPT_PATH/../ruby_windows/* $PACKAGE_PATH/ruby/
   cp -pr $SCRIPT_PATH/windows/* $PACKAGE_PATH/
-  cp $TEMP_PATH/change_log.md $PACKAGE_PATH/change_log_${VERSION}.md
+  cp $SCRIPT_PATH/../dokumentation/dokumentation.pdf $PACKAGE_PATH/anleitung.pdf
   mkdir -p $PACKAGE_PATH/wettkampf-manager/.bundle
   cp $SCRIPT_PATH/windows-bundle-config $PACKAGE_PATH/wettkampf-manager/.bundle/config
 
@@ -252,8 +266,13 @@ cd $DEST_PATH
 pwd
 ls -lh .
 
-echo -n "Erzeugte Dateien veröffentlichen? [j/n] "
-read REPLY
+if [[ FORCE_PUBLISH == "y" ]] ; then
+  REPLY="y"
+else
+  echo -n "Erzeugte Dateien veröffentlichen? [j/n] "
+  read REPLY
+fi
+
 if [[ "$REPLY" =~ ^[YyJj]$ ]] ; then
   PUBLISH_TARGET="/srv/fws-statistik/shared/uploads/wettkampf_manager"
   mkdir "$PUBLISH_TARGET/$VERSION/"
