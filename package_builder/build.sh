@@ -56,15 +56,10 @@ if [[ "$VERSION" == "" ]] ; then
   exit 1
 fi
 
-
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
 GIT="git@github.com:Feuerwehrsport/wettkampf-manager.git"
 PACKAGE_NAME="wettkampf-manager"
-
-TRAVELING_RUBY_VERSION="20150517-2.1.6"
-TRAVELING_RUBY_NATIVES=("bcrypt-3.1.10" "json-1.8.2" "nokogiri-1.6.6.2" "sqlite3-1.3.10")
-TRAVELING_RUBY_URL="http://d6r77u77i8pq3.cloudfront.net/releases"
 
 TEMP_PATH="/tmp/wettkampf-manager-packaging"
 CODE_PATH="$TEMP_PATH/wettkampf-manager"
@@ -91,13 +86,12 @@ fi
 rm -rf "$CODE_PATH/.git"
 rm -rf "$CODE_PATH/spec"
 cd "$CODE_PATH"
-rvm use 2.1.0@wettkampf-manager
+rvm use 2.3.3@wettkampf-manager
 bundle --without development test
 RAILS_ENV=production rake assets:precompile
 RAILS_ENV=production rake db:migrate
 RAILS_ENV=production rake db:seed
 RAILS_ENV=production rake import:suggestions[true]
-
 
 if [[ "$CHANGE_FILE" == "" ]] ; then
   touch "$TEMP_PATH/change_log.md"
@@ -116,9 +110,9 @@ cd "$TEMP_PATH/packaging/tmp"
 
 if [[ -d "$BUNDLE_CACHE" ]] ; then
   mkdir -p "$TEMP_PATH/packaging/vendor/ruby"
-  cp -r $BUNDLE_CACHE/2.1.0 "$TEMP_PATH/packaging/vendor/ruby/"
+  cp -r $BUNDLE_CACHE/2.3.0 "$TEMP_PATH/packaging/vendor/ruby/"
 fi
-rvm use 2.1.0@wettkampf-manager
+rvm use 2.3.3@wettkampf-manager
 BUNDLE_IGNORE_CONFIG=1 bundle install --clean --deployment --path ../vendor --without development test
 cp -fr "$TEMP_PATH/packaging/vendor/ruby" "$BUNDLE_CACHE"
 
@@ -164,7 +158,7 @@ rm -f $TEMP_PATH/packaging/vendor/*/*/cache/*
 rm -rf $TEMP_PATH/packaging/vendor/ruby/*/extensions
 rm -f $TEMP_PATH/packaging/vendor/ruby/*/gems/*/ext/Makefile
 rm -f $TEMP_PATH/packaging/vendor/ruby/*/gems/*/ext/*/Makefile
-rm -f $TEMP_PATH/packaging/vendor/ruby/*/gems/*/ext/*/tmp
+rm -rf $TEMP_PATH/packaging/vendor/ruby/*/gems/*/ext/*/tmp
 find $TEMP_PATH/packaging/vendor/ruby -name '*.c' -exec rm {} \;
 find $TEMP_PATH/packaging/vendor/ruby -name '*.cpp' -exec rm {} \;
 find $TEMP_PATH/packaging/vendor/ruby -name '*.h' -exec rm {} \;
@@ -179,65 +173,32 @@ find $TEMP_PATH/packaging/vendor/ruby -name '*.java' -exec rm {} \;
 find $TEMP_PATH/packaging/vendor/ruby -name '*.class' -exec rm {} \;
 
 
-default_target() {
-  TARGET="$1"
-  NODEJS_TARGET="$2"
-
-  PACKAGE_VERSION_NAME="$PACKAGE_NAME-$VERSION-$TARGET"
-  PACKAGE_PATH="$TEMP_PATH/$PACKAGE_VERSION_NAME"
-
-  RUBY_TAR="$DOWNLOAD_CACHE/traveling-ruby-$TRAVELING_RUBY_VERSION-$TARGET.tar.gz"
-  cd "$TEMP_PATH"
-
-  mkdir -p "$PACKAGE_PATH/lib/ruby"
-  tar -xzf "$RUBY_TAR" -C "$PACKAGE_PATH/lib/ruby"
-  cp -pR "$TEMP_PATH/packaging/vendor" "$PACKAGE_PATH/lib/"
-  cp "$CODE_PATH/Gemfile" "$CODE_PATH/Gemfile.lock" "$PACKAGE_PATH/lib/vendor/"
-
-  for NATIVE in ${TRAVELING_RUBY_NATIVES[@]}; do
-    NATIVE_TAR="$DOWNLOAD_CACHE/traveling-ruby-$TRAVELING_RUBY_VERSION-$TARGET-$NATIVE.tar.gz"
-    mkdir -p "$PACKAGE_PATH/lib/vendor/ruby"
-    tar -xzf "$NATIVE_TAR" -C "$PACKAGE_PATH/lib/vendor/ruby"
-  done
-  
-  cp -r "$CODE_PATH" "$PACKAGE_PATH/"
-
-  # node
-  NODE_TAR="$DOWNLOAD_CACHE/node-$NODEJS_TARGET.tar.gz"
-  tar -xzf "$NODE_TAR" -C "$TEMP_PATH"
-  mkdir -p "$PACKAGE_PATH/lib/node/bin"
-  chmod -R go-w "$PACKAGE_PATH/lib/node"
-  cp "$TEMP_PATH/node-v4.1.0-$NODEJS_TARGET/bin/node" "$PACKAGE_PATH/lib/node/bin/"
-  cp "$TEMP_PATH/node-v4.1.0-$NODEJS_TARGET/LICENSE" "$PACKAGE_PATH/lib/node/"
-
-  # clean
-  rm -rf $PACKAGE_PATH/lib/ruby/lib/ruby/*/rdoc*
-
-  # Skripte kopieren
-  cp -r $SCRIPT_PATH/posix/ $PACKAGE_PATH/
-  cp $SCRIPT_PATH/../dokumentation/dokumentation.pdf $PACKAGE_PATH/anleitung.pdf
-
-  tar -C $TEMP_PATH -czf $DEST_PATH/$PACKAGE_VERSION_NAME.tar.gz $PACKAGE_VERSION_NAME
-}
-
 windows_target() {
   TARGET="windows"
   PACKAGE_VERSION_NAME="$PACKAGE_NAME-$VERSION-$TARGET"
   PACKAGE_PATH="$TEMP_PATH/$PACKAGE_VERSION_NAME"
 
-
-  mkdir -p "$PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0"
+  mkdir -p "$PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0"
   cp -r "$CODE_PATH" "$PACKAGE_PATH/"
-  cp -pr "$TEMP_PATH/packaging/vendor/ruby/2.1.0" "$PACKAGE_PATH/ruby/lib/ruby/gems/"
+  cp -pr "$TEMP_PATH/packaging/vendor/ruby/2.3.0" "$PACKAGE_PATH/ruby/lib/ruby/gems/"
 
-  rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/specifications/bcrypt-3*.gemspec
-  rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/specifications/nokogiri-1*.gemspec
-  rm $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/specifications/sqlite3-1*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/bcrypt-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/bundler-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/ffi-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/hitimes-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/json-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/nokogiri-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/sqlite3-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/win32console-*.gemspec
 
-  rm -r $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/gems/bcrypt-3*
-  rm -r $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/gems/json-1*
-  rm -r $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/gems/nokogiri-1*
-  rm -r $PACKAGE_PATH/ruby/lib/ruby/gems/2.1.0/gems/sqlite3-1*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/bcrypt-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/bundler-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/ffi-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/hitimes-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/json-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/nokogiri-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/sqlite3-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/win32console-*
 
   cp -pr $SCRIPT_PATH/../ruby_windows/* $PACKAGE_PATH/ruby/
   cp -pr $SCRIPT_PATH/windows/* $PACKAGE_PATH/
@@ -250,9 +211,6 @@ windows_target() {
 }
 
 
-default_target "linux-x86_64" "linux-x64"
-default_target "linux-x86" "linux-x86"
-default_target "osx" "darwin-x64"
 windows_target
 
 cd $DEST_PATH

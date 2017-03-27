@@ -1,5 +1,5 @@
 # enable RubyInstaller DevKit usage as a vendorable helper library
-unless ENV['PATH'].include?('C:\\RailsInstaller\\DevKit\\mingw\\bin') then
+unless ENV['PATH'].include?('C:\\devkit\\mingw\\bin') then
   phrase = 'Temporarily enhancing PATH to include DevKit...'
   if defined?(Gem)
     Gem.ui.say(phrase) if Gem.configuration.verbose
@@ -7,9 +7,9 @@ unless ENV['PATH'].include?('C:\\RailsInstaller\\DevKit\\mingw\\bin') then
     puts phrase
   end
   puts "Prepending ENV['PATH'] to include DevKit..." if $DEBUG
-  ENV['PATH'] = 'C:\\RailsInstaller\\DevKit\\bin;C:\\RailsInstaller\\DevKit\\mingw\\bin;' + ENV['PATH']
+  ENV['PATH'] = 'C:\\devkit\\bin;C:\\devkit\\mingw\\bin;' + ENV['PATH']
 end
-ENV['RI_DEVKIT'] = 'C:\\RailsInstaller\\DevKit'
+ENV['RI_DEVKIT'] = 'C:\\devkit'
 ENV['CC'] = 'gcc'
 ENV['CXX'] = 'g++'
 ENV['CPP'] = 'cpp'

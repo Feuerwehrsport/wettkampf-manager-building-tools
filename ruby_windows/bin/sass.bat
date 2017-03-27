@@ -1,6 +1,7 @@
 @ECHO OFF
 IF NOT "%~f0" == "~f0" GOTO :WinNT
-@"ruby.exe" "C:/wettkampf-manager-windows/Ruby2.1.0/bin/sass" %1 %2 %3 %4 %5 %6 %7 %8 %9
+echo "You need WIN NT"
+rem @"C:\Ruby23\bin\ruby.exe" "C:/Ruby23/bin/sass" %1 %2 %3 %4 %5 %6 %7 %8 %9
 GOTO :EOF
 :WinNT
 @"ruby.exe" "%~dpn0" %*
