@@ -51,10 +51,6 @@ do
   esac
 done
 
-if [[ "$VERSION" == "" ]] ; then
-  usage
-  exit 1
-fi
 
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
@@ -89,9 +85,17 @@ cd "$CODE_PATH"
 rvm use 2.3.3@wettkampf-manager
 bundle --without development test
 RAILS_ENV=production rake assets:precompile
+find public/assets -name *.gz -delete
 RAILS_ENV=production rake db:migrate
 RAILS_ENV=production rake db:seed
 RAILS_ENV=production rake import:suggestions[true]
+
+if [[ "$VERSION" == "" ]] ; then
+  CURRENT_RELEASE_FILE="$(ls "$CODE_PATH/doc/releases" | tail -n 1)"
+  CHANGE_FILE="$CODE_PATH/doc/releases/$CURRENT_RELEASE_FILE"
+  VERSION="$(echo "$CURRENT_RELEASE_FILE" | sed -E 's/^.+_//' | sed 's/.md$//' )"
+  DATE="$(echo "$CURRENT_RELEASE_FILE" | sed -E 's/_.+$//')"
+fi
 
 if [[ "$CHANGE_FILE" == "" ]] ; then
   touch "$TEMP_PATH/change_log.md"
@@ -99,6 +103,7 @@ if [[ "$CHANGE_FILE" == "" ]] ; then
 else
   cp "$CHANGE_FILE" "$TEMP_PATH/change_log.md"
 fi
+rm -rf "$CODE_PATH/doc"
 
 $SCRIPT_PATH/release_info.py "$DATE" "$COMMIT_ID" "$(date '+%Y-%m-%d %H:%M:%S')" $TEMP_PATH/change_log.md > $TEMP_PATH/release-info.json
 
