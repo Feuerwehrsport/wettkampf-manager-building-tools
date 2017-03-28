@@ -103,6 +103,8 @@ if [[ "$CHANGE_FILE" == "" ]] ; then
 else
   cp "$CHANGE_FILE" "$TEMP_PATH/change_log.md"
 fi
+
+cp -r "$CODE_PATH/doc/dokumentation/" "$TEMP_PATH/"
 rm -rf "$CODE_PATH/doc"
 
 $SCRIPT_PATH/release_info.py "$DATE" "$COMMIT_ID" "$(date '+%Y-%m-%d %H:%M:%S')" $TEMP_PATH/change_log.md > $TEMP_PATH/release-info.json
@@ -207,7 +209,7 @@ windows_target() {
 
   cp -pr $SCRIPT_PATH/../ruby_windows/* $PACKAGE_PATH/ruby/
   cp -pr $SCRIPT_PATH/windows/* $PACKAGE_PATH/
-  cp $SCRIPT_PATH/../dokumentation/dokumentation.pdf $PACKAGE_PATH/anleitung.pdf
+  cp $TEMP_PATH/dokumentation/windows.pdf $PACKAGE_PATH/anleitung.pdf
   mkdir -p $PACKAGE_PATH/wettkampf-manager/.bundle
   cp $SCRIPT_PATH/windows-bundle-config $PACKAGE_PATH/wettkampf-manager/.bundle/config
 
