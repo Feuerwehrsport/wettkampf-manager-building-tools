@@ -81,7 +81,7 @@ else
 fi
 
 SECRET_KEY_BASE=$(pwgen 60 -n 1)
-sed -i "s/<%= CHANGED_BY_BUILDING_TOOL %>/$SECRET_KEY_BASE/" "$CODE_PATH/config/secrets.yml"
+sed -i "s/<%= ENV\[\"CHANGED_BY_BUILDING_TOOL\"\] %>/$SECRET_KEY_BASE/" "$CODE_PATH/config/secrets.yml"
 
 rm -rf "$CODE_PATH/.git"
 rm -rf "$CODE_PATH/spec"
