@@ -70,15 +70,19 @@ mkdir -p "$TEMP_PATH"
 mkdir -p "$CODE_PATH"
 mkdir -p "$DEST_PATH"
 
-git clone "$GIT" "$CODE_PATH"
+git clone -b release "$GIT" "$CODE_PATH"
 if [[ "$GIT_COMMIT_ID" == "" ]] ; then
-  COMMIT_ID=$(git ls-remote $GIT refs/heads/master | cut -f1)
+  COMMIT_ID=$(git ls-remote $GIT refs/heads/release | cut -f1)
 else
   cd "$CODE_PATH"
   git reset --hard "$GIT_COMMIT_ID"
   COMMIT_ID="$GIT_COMMIT_ID"
   cd "$SCRIPT_PATH"
 fi
+
+SECRET_KEY_BASE=$(pwgen 60 -n 1)
+sed -i "s/<%= CHANGED_BY_BUILDING_TOOL %>/$SECRET_KEY_BASE/" "$CODE_PATH/config/secrets.yml"
+
 rm -rf "$CODE_PATH/.git"
 rm -rf "$CODE_PATH/spec"
 cd "$CODE_PATH"
@@ -103,6 +107,7 @@ if [[ "$CHANGE_FILE" == "" ]] ; then
 else
   cp "$CHANGE_FILE" "$TEMP_PATH/change_log.md"
 fi
+
 
 cp -r "$CODE_PATH/doc/dokumentation/" "$TEMP_PATH/"
 rm -rf "$CODE_PATH/doc"
