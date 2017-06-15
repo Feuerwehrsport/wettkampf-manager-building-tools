@@ -119,6 +119,8 @@ mkdir -p "$TEMP_PATH/packaging/vendor"
 
 cp "$CODE_PATH/Gemfile" "$CODE_PATH/Gemfile.lock" "$TEMP_PATH/packaging/tmp/"
 cd "$TEMP_PATH/packaging/tmp"
+cp -r "$CODE_PATH/firesport" "$TEMP_PATH/packaging/tmp/"
+cp -r "$CODE_PATH/firesport-series" "$TEMP_PATH/packaging/tmp/"
 
 if [[ -d "$BUNDLE_CACHE" ]] ; then
   mkdir -p "$TEMP_PATH/packaging/vendor/ruby"
