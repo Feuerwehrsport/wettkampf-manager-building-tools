@@ -70,7 +70,7 @@ mkdir -p "$TEMP_PATH"
 mkdir -p "$CODE_PATH"
 mkdir -p "$DEST_PATH"
 
-git clone -b release "$GIT" "$CODE_PATH"
+git clone -b release --recursive "$GIT" "$CODE_PATH"
 if [[ "$GIT_COMMIT_ID" == "" ]] ; then
   COMMIT_ID=$(git ls-remote $GIT refs/heads/release | cut -f1)
 else
