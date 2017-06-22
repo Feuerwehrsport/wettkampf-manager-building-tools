@@ -243,5 +243,5 @@ if [[ "$REPLY" =~ ^[YyJj]$ ]] ; then
   mkdir -p "$PUBLISH_TARGET/$VERSION/"
   cp -r $DEST_PATH/* "$PUBLISH_TARGET/$VERSION/"
   cp $TEMP_PATH/release-info.json "$PUBLISH_TARGET/$VERSION/"
-  cp $TEMP_PATH/dokumentation/anleitung.pdf "$PUBLISH_TARGET/anleitung.pdf"
+  cp $TEMP_PATH/dokumentation/anleitung.pdf "$PUBLISH_TARGET/$VERSION/anleitung.pdf"
 fi
