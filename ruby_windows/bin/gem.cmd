@@ -6,7 +6,7 @@ bindir="${0%/*}" #
 exec "$bindir/ruby" -x "$0" "$@" #
 >, #
 } #
-#!C:/Users/Justin/Projects/rubyinstaller/sandbox/ruby23_mingw/bin/ruby
+#!/mingw32/bin/ruby
 #--
 # Copyright 2006 by Chad Fowler, Rich Kilmer, Jim Weirich and others.
 # All rights reserved.

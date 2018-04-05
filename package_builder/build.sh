@@ -70,12 +70,12 @@ mkdir -p "$TEMP_PATH"
 mkdir -p "$CODE_PATH"
 mkdir -p "$DEST_PATH"
 
-git clone -b release --recursive "$GIT" "$CODE_PATH"
+git clone -b release --recursive "$GIT" "$CODE_PATH" >/dev/null 2>&1
 if [[ "$GIT_COMMIT_ID" == "" ]] ; then
   COMMIT_ID=$(git ls-remote $GIT refs/heads/release | cut -f1)
 else
   cd "$CODE_PATH"
-  git reset --hard "$GIT_COMMIT_ID"
+  git reset --hard "$GIT_COMMIT_ID" >/dev/null 2>&1
   COMMIT_ID="$GIT_COMMIT_ID"
   cd "$SCRIPT_PATH"
 fi
@@ -83,16 +83,14 @@ fi
 SECRET_KEY_BASE=$(pwgen 60 -n 1)
 sed -i "s/<%= ENV\[\"CHANGED_BY_BUILDING_TOOL\"\] %>/$SECRET_KEY_BASE/" "$CODE_PATH/config/secrets.yml"
 
-rm -rf "$CODE_PATH/.git"
-rm -rf "$CODE_PATH/spec"
 cd "$CODE_PATH"
-rvm use 2.3.3@wettkampf-manager
-bundle --without development test
-RAILS_ENV=production rake assets:precompile
+rvm use 2.4.4@wettkampf-manager >/dev/null
+bundle --without development test --quiet
+RAILS_ENV=production rake assets:precompile >/dev/null 2>&1
 find public/assets -name *.gz -delete
-RAILS_ENV=production rake db:migrate
-RAILS_ENV=production rake db:seed
-RAILS_ENV=production rake import:suggestions[true]
+RAILS_ENV=production rake db:migrate >/dev/null
+RAILS_ENV=production rake db:seed >/dev/null
+RAILS_ENV=production rake import:suggestions[true] >/dev/null
 
 if [[ "$VERSION" == "" ]] ; then
   CURRENT_RELEASE_FILE="$(ls "$CODE_PATH/doc/releases" | tail -n 1)"
@@ -108,6 +106,25 @@ else
   cp "$CHANGE_FILE" "$TEMP_PATH/change_log.md"
 fi
 
+rm -rf "$CODE_PATH/.git"
+rm -rf "$CODE_PATH/spec"
+rm -rf "$CODE_PATH/.eslintignore"
+rm -rf "$CODE_PATH/.gitignore"
+rm -rf "$CODE_PATH/.travis.yml"
+rm -rf "$CODE_PATH/.versions.conf"
+rm -rf "$CODE_PATH/.rubocop.yml"
+rm -rf "$CODE_PATH/.gitmodules"
+rm -rf "$CODE_PATH/db/dm_seed.rb"
+rm -rf "$CODE_PATH/db/migrate/"
+rm -rf "$CODE_PATH/Guardfile"
+rm -rf "$CODE_PATH/.codeclimate.yml"
+rm -rf "$CODE_PATH/config/environments/test.rb"
+rm -rf "$CODE_PATH/config/coffeelint.json"
+rm -rf "$CODE_PATH/.rspec"
+rm -rf "$CODE_PATH/.eslintrc"
+rm -rf "$CODE_PATH/firesport-series/.git"
+rm -rf "$CODE_PATH/firesport/.git"
+rm -rf "$CODE_PATH/.csslintrc"
 
 cp -r "$CODE_PATH/doc/dokumentation/" "$TEMP_PATH/"
 rm -rf "$CODE_PATH/doc"
@@ -124,11 +141,12 @@ cp -r "$CODE_PATH/firesport-series" "$TEMP_PATH/packaging/tmp/"
 
 if [[ -d "$BUNDLE_CACHE" ]] ; then
   mkdir -p "$TEMP_PATH/packaging/vendor/ruby"
-  cp -r $BUNDLE_CACHE/2.3.0 "$TEMP_PATH/packaging/vendor/ruby/"
+  cp -r $BUNDLE_CACHE/2.4.0 "$TEMP_PATH/packaging/vendor/ruby/"
 fi
-rvm use 2.3.3@wettkampf-manager
-BUNDLE_IGNORE_CONFIG=1 bundle install --clean --deployment --path ../vendor --without development test
-cp -fr "$TEMP_PATH/packaging/vendor/ruby" "$BUNDLE_CACHE"
+rvm use 2.4.4@wettkampf-manager >/dev/null
+BUNDLE_IGNORE_CONFIG=1 bundle install --clean --deployment --path ../vendor --without development test --quiet
+mkdir -p "$BUNDLE_CACHE"
+cp -fr "$TEMP_PATH/packaging/vendor/ruby/2.4.0" "$BUNDLE_CACHE/"
 
 
 mkdir -p "$TEMP_PATH/packaging/vendor/.bundle"
@@ -168,7 +186,7 @@ rm -rf $TEMP_PATH/packaging/vendor/ruby/*/gems/*/.gitignore
 rm -rf $TEMP_PATH/packaging/vendor/ruby/*/gems/*/.travis.yml
 
 # Remove leftover native extension sources and compilation objects
-rm -f $TEMP_PATH/packaging/vendor/*/*/cache/*
+rm -rf $TEMP_PATH/packaging/vendor/*/*/cache/*
 rm -rf $TEMP_PATH/packaging/vendor/ruby/*/extensions
 rm -f $TEMP_PATH/packaging/vendor/ruby/*/gems/*/ext/Makefile
 rm -f $TEMP_PATH/packaging/vendor/ruby/*/gems/*/ext/*/Makefile
@@ -192,27 +210,27 @@ windows_target() {
   PACKAGE_VERSION_NAME="$PACKAGE_NAME-$VERSION-$TARGET"
   PACKAGE_PATH="$TEMP_PATH/$PACKAGE_VERSION_NAME"
 
-  mkdir -p "$PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0"
+  mkdir -p "$PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0"
   cp -r "$CODE_PATH" "$PACKAGE_PATH/"
-  cp -pr "$TEMP_PATH/packaging/vendor/ruby/2.3.0" "$PACKAGE_PATH/ruby/lib/ruby/gems/"
+  cp -pr "$TEMP_PATH/packaging/vendor/ruby/2.4.0" "$PACKAGE_PATH/ruby/lib/ruby/gems/"
 
-  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/bcrypt-*.gemspec
-  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/bundler-*.gemspec
-  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/ffi-*.gemspec
-  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/hitimes-*.gemspec
-  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/json-*.gemspec
-  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/nokogiri-*.gemspec
-  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/sqlite3-*.gemspec
-  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/specifications/win32console-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/specifications/bcrypt-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/specifications/bundler-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/specifications/ffi-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/specifications/hitimes-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/specifications/json-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/specifications/nokogiri-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/specifications/sqlite3-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/specifications/win32console-*.gemspec
 
-  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/bcrypt-*
-  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/bundler-*
-  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/ffi-*
-  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/hitimes-*
-  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/json-*
-  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/nokogiri-*
-  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/sqlite3-*
-  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.3.0/gems/win32console-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/gems/bcrypt-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/gems/bundler-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/gems/ffi-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/gems/hitimes-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/gems/json-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/gems/nokogiri-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/gems/sqlite3-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.4.0/gems/win32console-*
 
   cp -pr $SCRIPT_PATH/../ruby_windows/* $PACKAGE_PATH/ruby/
   cp -pr $SCRIPT_PATH/windows/* $PACKAGE_PATH/
@@ -221,24 +239,13 @@ windows_target() {
   cp $SCRIPT_PATH/windows-bundle-config $PACKAGE_PATH/wettkampf-manager/.bundle/config
 
   cd $PACKAGE_PATH
-  zip -r $DEST_PATH/$PACKAGE_VERSION_NAME.zip .
+  zip -q -r $DEST_PATH/$PACKAGE_VERSION_NAME.zip .
 }
 
 
 windows_target
 
-cd $DEST_PATH
-pwd
-ls -lh .
-
 if [[ "$FORCE_PUBLISH" == "y" ]] ; then
-  REPLY="y"
-else
-  echo -n "Erzeugte Dateien veröffentlichen? [j/n] "
-  read REPLY
-fi
-
-if [[ "$REPLY" =~ ^[YyJj]$ ]] ; then
   PUBLISH_TARGET="/srv/feuerwehrsport-statistik/shared/uploads/wettkampf_manager"
   mkdir -p "$PUBLISH_TARGET/$VERSION/"
   cp -r $DEST_PATH/* "$PUBLISH_TARGET/$VERSION/"

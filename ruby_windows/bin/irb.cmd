@@ -6,7 +6,7 @@ bindir="${0%/*}" #
 exec "$bindir/ruby" -x "$0" "$@" #
 >, #
 } #
-#!C:/Users/Justin/Projects/rubyinstaller/sandbox/ruby23_mingw/bin/ruby
+#!/mingw32/bin/ruby
 #
 #   irb.rb - interactive ruby
 #   	$Release Version: 0.9.6 $
@@ -14,6 +14,6 @@ exec "$bindir/ruby" -x "$0" "$@" #
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
 
-require "irb"
+require "irbrc_predefiner"; require "irb"
 
 IRB.start(__FILE__)

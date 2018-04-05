@@ -6,7 +6,7 @@ bindir="${0%/*}" #
 exec "$bindir/ruby" -x "$0" "$@" #
 >, #
 } #
-#!C:/Users/Justin/Projects/rubyinstaller/sandbox/ruby23_mingw/bin/ruby
+#!/mingw32/bin/ruby
 # Tiny eRuby --- ERB2
 # Copyright (c) 1999-2000,2002 Masatoshi SEKI
 # You can redistribute it and/or modify it under the same terms as Ruby.

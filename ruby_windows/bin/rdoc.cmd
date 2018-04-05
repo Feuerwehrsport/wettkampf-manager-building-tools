@@ -6,7 +6,7 @@ bindir="${0%/*}" #
 exec "$bindir/ruby" -x "$0" "$@" #
 >, #
 } #
-#!C:/Users/Justin/Projects/rubyinstaller/sandbox/ruby23_mingw/bin/ruby
+#!/mingw32/bin/ruby
 #
 #  RDoc: Documentation tool for source code
 #        (see lib/rdoc/rdoc.rb for more information)

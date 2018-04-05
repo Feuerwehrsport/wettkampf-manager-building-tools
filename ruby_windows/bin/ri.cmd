@@ -6,7 +6,7 @@ bindir="${0%/*}" #
 exec "$bindir/ruby" -x "$0" "$@" #
 >, #
 } #
-#!C:/Users/Justin/Projects/rubyinstaller/sandbox/ruby23_mingw/bin/ruby
+#!/mingw32/bin/ruby
 
 begin
   gem 'rdoc'
