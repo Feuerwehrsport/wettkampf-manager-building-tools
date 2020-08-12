@@ -1,12 +1,12 @@
 :""||{ ""=> %q<-*- ruby -*-
 @"%~dp0ruby" -x "%~f0" %*
 @exit /b %ERRORLEVEL%
-};{ #
+};{#
 bindir="${0%/*}" #
-exec "$bindir/ruby" -x "$0" "$@" #
->, #
-} #
-#!/mingw32/bin/ruby
+exec "$bindir/ruby" "-x" "$0" "$@" #
+>,
+}
+#!/usr/bin/env ruby
 # Tiny eRuby --- ERB2
 # Copyright (c) 1999-2000,2002 Masatoshi SEKI
 # You can redistribute it and/or modify it under the same terms as Ruby.
@@ -83,6 +83,7 @@ class ERB
           when '-r'                        # require
             require ARGV.req_arg
           when '-S'                        # security level
+            warn 'warning: -S option of erb command is deprecated. Please do not use this.'
             arg = ARGV.req_arg
             raise "invalid safe_level #{arg.dump}" unless arg =~ /\A[0-1]\z/
             safe_level = arg.to_i
@@ -120,22 +121,26 @@ class ERB
   -v               enable verbose mode
   -d               set $DEBUG to true
   -r library       load a library
-  -S safe_level    set $SAFE (0..1)
   -E ex[:in]       set default external/internal encodings
-  -U               set default encoding to UTF-8.
+  -U               set default encoding to UTF-8
   -T trim_mode     specify trim_mode (0..2, -)
-  -P               ignore lines which start with "%"
+  -P               disable ruby code evaluation for lines beginning with %
   var=value        set variable
 EOU
         exit 1
       end
 
-      $<.set_encoding(Encoding::ASCII_8BIT, nil)
+      $<.set_encoding(Encoding::UTF_8, nil)
       src = $<.read
       filename = $FILENAME
       exit 2 unless src
       trim = trim_mode_opt(trim_mode, disable_percent)
-      erb = factory.new(src.untaint, safe_level, trim)
+      if safe_level.nil?
+        erb = factory.new(src.untaint, trim_mode: trim)
+      else
+        # [deprecated] This will be removed at Ruby 2.7.
+        erb = factory.new(src.untaint, safe_level, trim_mode: trim)
+      end
       erb.filename = filename
       if output
         if number

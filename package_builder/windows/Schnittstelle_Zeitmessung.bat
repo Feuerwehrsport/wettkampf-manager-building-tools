@@ -4,8 +4,11 @@ PUSHD %~dp0.
 SET ROOT_DIR=%CD%
 POPD
 
-SET PATH=%ROOT_DIR%\ruby\bin;%ROOT_DIR%\ruby\lib\ruby\gems\2.4.0\bin;%PATH%
+SET PATH=%ROOT_DIR%\ruby\bin;%ROOT_DIR%\ruby\lib\ruby\gems\2.6.0\bin;%PATH%
+SET RAILS_ENV=production
 
-ruby %ROOT_DIR%\wrapper\start_api.rb
+PUSHD %ROOT_DIR%\wettkampf-manager
+bundle exec rails runner -e production "API::Runner.new"
+POPD
 
 PAUSE
