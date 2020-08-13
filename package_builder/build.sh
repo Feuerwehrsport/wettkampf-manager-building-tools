@@ -67,18 +67,15 @@ mkdir -p "$TEMP_PATH"
 mkdir -p "$CODE_PATH"
 mkdir -p "$DEST_PATH"
 
-rsync -ax /home/georf/workspace/wettkampf-manager/ "$CODE_PATH/"
-COMMIT_ID="123"
-
-# git clone -b release --recursive "$GIT" "$CODE_PATH" >/dev/null 2>&1
-# if [[ "$GIT_COMMIT_ID" == "" ]] ; then
-#   COMMIT_ID=$(git ls-remote $GIT refs/heads/release | cut -f1)
-# else
-#   cd "$CODE_PATH"
-#   git reset --hard "$GIT_COMMIT_ID" >/dev/null 2>&1
-#   COMMIT_ID="$GIT_COMMIT_ID"
-#   cd "$SCRIPT_PATH"
-# fi
+git clone -b release --recursive "$GIT" "$CODE_PATH" >/dev/null 2>&1
+if [[ "$GIT_COMMIT_ID" == "" ]] ; then
+  COMMIT_ID=$(git ls-remote $GIT refs/heads/release | cut -f1)
+else
+  cd "$CODE_PATH"
+  git reset --hard "$GIT_COMMIT_ID" >/dev/null 2>&1
+  COMMIT_ID="$GIT_COMMIT_ID"
+  cd "$SCRIPT_PATH"
+fi
 
 SECRET_KEY_BASE=$(pwgen 60 -n 1)
 sed -i "s/<%= ENV\[\"CHANGED_BY_BUILDING_TOOL\"\] %>/$SECRET_KEY_BASE/" "$CODE_PATH/config/secrets.yml"
