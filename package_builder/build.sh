@@ -209,23 +209,27 @@ windows_target() {
   cp -r "$CODE_PATH" "$PACKAGE_PATH/"
   cp -pr "$TEMP_PATH/packaging/vendor/ruby/2.6.0" "$PACKAGE_PATH/ruby/lib/ruby/gems/"
 
-  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/bcrypt-*.gemspec
   rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/bundler-*.gemspec
   rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/ffi-*.gemspec
-  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/hitimes-*.gemspec
   rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/json-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/nio4r-*.gemspec
   rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/nokogiri-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/rake-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/sassc-*.gemspec
   rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/sqlite3-*.gemspec
-  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/win32console-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/thread_safe-*.gemspec
+  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/websocket-driver-*.gemspec
 
-  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/bcrypt-*
   rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/bundler-*
   rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/ffi-*
-  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/hitimes-*
   rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/json-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/nio4r-*
   rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/nokogiri-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/rake-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/sassc-*
   rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/sqlite3-*
-  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/win32console-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/thread_safe-*
+  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/websocket-driver-*
 
   cp -pr $SCRIPT_PATH/../ruby_windows/* $PACKAGE_PATH/ruby/
   cp -pr $SCRIPT_PATH/windows/* $PACKAGE_PATH/
