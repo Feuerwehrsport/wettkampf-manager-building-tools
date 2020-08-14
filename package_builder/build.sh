@@ -179,6 +179,8 @@ find $TEMP_PATH/packaging/vendor/ruby -name '*.md' -exec rm {} \;
 
 # Remove misc unnecessary files
 rm -rf $TEMP_PATH/packaging/vendor/ruby/*/gems/*/.gitignore
+rm -rf $TEMP_PATH/packaging/vendor/ruby/*/gems/*/.github
+rm -rf $TEMP_PATH/packaging/vendor/ruby/*/gems/*/.gitmodules
 rm -rf $TEMP_PATH/packaging/vendor/ruby/*/gems/*/.travis.yml
 
 # Remove leftover native extension sources and compilation objects
