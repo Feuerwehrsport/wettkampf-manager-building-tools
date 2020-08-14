@@ -240,7 +240,7 @@ windows_target() {
 windows_target
 
 if [[ $FORCE_PUBLISH == "y" ]]; then
-  PUBLISH_TARGET="/srv/feuerwehrsport-statistik/shared/uploads/wettkampf_manager"
+  PUBLISH_TARGET="/srv/feuerwehrsport-statistik/shared/public/uploads/wettkampf_manager"
   mkdir -p "$PUBLISH_TARGET/$VERSION/"
   cp -r $DEST_PATH/* "$PUBLISH_TARGET/$VERSION/"
   cp $TEMP_PATH/release-info.json "$PUBLISH_TARGET/$VERSION/"
