@@ -216,7 +216,6 @@ windows_target() {
   rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/nio4r-*.gemspec
   rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/nokogiri-*.gemspec
   rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/rake-*.gemspec
-  rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/sassc-*.gemspec
   rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/sqlite3-*.gemspec
   rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/thread_safe-*.gemspec
   rm -f $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/specifications/websocket-driver-*.gemspec
@@ -227,7 +226,6 @@ windows_target() {
   rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/nio4r-*
   rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/nokogiri-*
   rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/rake-*
-  rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/sassc-*
   rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/sqlite3-*
   rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/thread_safe-*
   rm -rf $PACKAGE_PATH/ruby/lib/ruby/gems/2.6.0/gems/websocket-driver-*
