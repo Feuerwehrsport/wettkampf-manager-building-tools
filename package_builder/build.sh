@@ -1,8 +1,7 @@
 #!/bin/bash
 export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
-# source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 set -e
-set -x
 
 usage() {
   cat << EOF
