@@ -12,4 +12,4 @@ hash =  {
   'database-changed': sys.argv[3],
 }
 
-print json.dumps(hash, indent=2)
+print(json.dumps(hash, indent=2))
